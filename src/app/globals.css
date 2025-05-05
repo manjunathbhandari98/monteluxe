@@ -24,3 +24,85 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+@layer utilities {
+  /* --- Luxury Colors --- */
+  .text-luxury-gold {
+    color: #d4af37;
+  }
+
+  .text-royal-gold {
+    color: #ffd700;
+  }
+
+  .text-rich-black {
+    color: #0d0d0d;
+  }
+
+  .text-deep-emerald {
+    color: #004225;
+  }
+
+  .text-luxury-silver {
+    color: #c0c0c0;
+  }
+
+  .text-royal-blue {
+    color: #002366;
+  }
+
+  .text-charcoal-gray {
+    color: #333333;
+  }
+
+  .text-warm-beige {
+    color: #f5f5dc;
+  }
+
+  /* --- Background Colors --- */
+  .bg-luxury-gold {
+    background-color: #d4af37;
+  }
+
+  .bg-rich-black {
+    background-color: #0d0d0d;
+  }
+
+  .bg-deep-emerald {
+    background-color: #004225;
+  }
+
+  .bg-luxury-silver {
+    background-color: #c0c0c0;
+  }
+
+  .bg-charcoal-gray {
+    background-color: #333333;
+  }
+
+  .bg-warm-beige {
+    background-color: #f5f5dc;
+  }
+
+  /* --- Border Colors --- */
+  .border-luxury-gold {
+    border-color: #d4af37;
+  }
+
+  .border-deep-emerald {
+    border-color: #004225;
+  }
+
+  .border-luxury-silver {
+    border-color: #c0c0c0;
+  }
+
+  /* --- Shadow Effects --- */
+  .shadow-luxury {
+    box-shadow: 0 4px 20px rgba(212, 175, 55, 0.4);
+  }
+
+  .shadow-emerald {
+    box-shadow: 0 4px 20px rgba(0, 66, 37, 0.4);
+  }
+}
