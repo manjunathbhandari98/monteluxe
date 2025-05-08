@@ -1,23 +1,40 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 const Navbar = () => {
+  const pathname = usePathname();
+
+  const links = [
+    {
+      option: "Collections",
+      link: "/collections",
+    },
+    { option: "Men", link: "/men" },
+    { option: "Women", link: "/women" },
+    {
+      option: "Limited Editions",
+      link: "/limited-edition",
+    },
+    { option: "About", link: "/about" },
+  ];
+
   return (
     <nav className="hidden md:flex space-x-8">
-      {[
-        "Collections",
-        "Men",
-        "Women",
-        "Limited Edition",
-        "About",
-      ].map((item) => (
+      {links.map((item) => (
         <Link
-          key={item}
-          href={`#${item
-            .toLowerCase()
-            .replace(/\s+/g, "-")}`}
-          className="text-sm font-medium uppercase tracking-wider hover:text-luxury-gold transition-colors duration-300"
+          key={item.link}
+          href={item.link}
+          className={`text-sm font-semibold uppercase tracking-wider
+            ${
+              pathname.startsWith(item.link)
+                ? "text-luxury-gold"
+                : "text-white"
+            }
+            hover:text-[#d4af37] transition-colors duration-300`}
         >
-          {item}
+          {item.option}
         </Link>
       ))}
     </nav>

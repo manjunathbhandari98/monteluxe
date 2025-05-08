@@ -6,6 +6,8 @@ import {
   Libre_Baskerville,
   Work_Sans,
 } from "next/font/google";
+import { ThemeProvider } from "@/components/theme-provider";
+import Footer from "@/components/layout/Footer";
 
 // Load fonts with desired weights/styles
 const libreBaskerville = Libre_Baskerville({
@@ -47,8 +49,18 @@ export default function RootLayout({
       lang="en"
       className={`${libreBaskerville.variable} ${workSans.variable}`}
     >
-      <Header />
-      <body>{children}</body>
+      <body>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <Header />
+          {children}
+          <Footer />
+        </ThemeProvider>
+      </body>
     </html>
   );
 }
