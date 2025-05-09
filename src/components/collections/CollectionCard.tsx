@@ -4,6 +4,7 @@ import Image from "next/image";
 import { CollectionType } from "@/types";
 import Button from "../custom/Button";
 import { ArrowRight } from "lucide-react";
+import Link from "next/link";
 
 interface CollectionCardProps {
   collection: CollectionType;
@@ -54,14 +55,18 @@ const CollectionCard: React.FC<
       {/* button */}
       <div className="flex justify-between items-center font-serif mt-auto text-luxury-gold font-semibold">
         <h5>₹{collection.price}</h5>
-        <Button
-          size="small"
-          variant="outline"
-          className="border-thin-gold font-semibold flex gap-4"
+        <Link
+          href={`/products?category=${collection.name}`}
         >
-          Explore
-          <ArrowRight size={17} />
-        </Button>
+          <Button
+            size="small"
+            variant="outline"
+            className="border-thin-gold font-semibold flex gap-4"
+          >
+            Explore
+            <ArrowRight size={17} />
+          </Button>
+        </Link>
       </div>
     </div>
   );

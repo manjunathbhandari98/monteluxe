@@ -28,10 +28,12 @@ export interface TestimonialType {
 export interface ProductProps {
   id: string;
   name: string;
+  slug: string;
   gender: string;
   price: number;
   currency: string;
   image: string;
+  images?: string[];
   description: string;
   case_size: string;
   case_material: string;

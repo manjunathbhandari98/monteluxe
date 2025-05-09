@@ -8,7 +8,7 @@ const ProductCard = ({
   product: ProductProps;
 }) => {
   return (
-    <Link href={`/products/${product.id}`}>
+    <Link href={`/product/${product.slug}`}>
       <div className="rounded-md p-4 hover:shadow-lg hover:scale-3d hover:scale-102 transition">
         <Image
           src={product.image}

@@ -1,21 +1,23 @@
 "use client";
-import Hero from "@/components/men/hero";
+import Hero from "@/components/women/Hero";
 import { product } from "@/data/product";
 import ProductCard from "@/components/product/ProductCard";
 import FilterBar from "@/components/product/FilterBar";
 import { useMemo, useState } from "react";
 import PriceSlider from "@/components/product/PriceSlider";
+import { SortButton } from "@/components/product/SortButton";
 
 const Page = () => {
   const [selectedFilters, setSelectedFilters] =
     useState<Record<string, string[]>>({
-      Gender: [],
+      Gender: ["Men"],
       Material: [],
       CaseSize: [],
       CaseMaterial: [],
       CrystalType: [],
       WaterResistance: [],
       Movement: [],
+      Category: [],
     });
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -35,16 +37,17 @@ const Page = () => {
 
   // Dynamically extract unique filter options from product data
   const filters = useMemo(() => {
-    const genderSet = new Set<string>();
+    // const genderSet = new Set<string>();
     const materialSet = new Set<string>();
     const caseSizeSet = new Set<string>();
     const caseMaterialSet = new Set<string>();
     const crystalTypeSet = new Set<string>();
     const waterResistanceSet = new Set<string>();
     const movementSet = new Set<string>();
+    const categorySet = new Set<string>();
 
     product.forEach((p) => {
-      if (p.gender) genderSet.add(p.gender);
+      // if (p.gender) genderSet.add(p.gender);
       if (p.strap_material)
         materialSet.add(p.strap_material);
       if (p.case_size)
@@ -58,13 +61,14 @@ const Page = () => {
           p.water_resistance
         );
       if (p.movement) movementSet.add(p.movement);
+      if (p.category) categorySet.add(p.category);
     });
 
     return [
-      {
-        name: "Gender",
-        options: Array.from(genderSet),
-      },
+      // {
+      //   name: "Gender",
+      //   options: Array.from(genderSet),
+      // },
       {
         name: "Material",
         options: Array.from(materialSet),
@@ -101,8 +105,15 @@ const Page = () => {
         name: "Movement",
         options: Array.from(movementSet),
       },
+      {
+        name: "Category",
+        options: Array.from(categorySet),
+      },
     ];
   }, []);
+
+  const [sortValue, setSortValue] =
+    useState("price-asc");
 
   const handleFilterChange = (
     filterName: string,
@@ -158,6 +169,11 @@ const Page = () => {
       selectedFilters.Movement.includes(
         p.movement
       );
+    const categoryMatch =
+      selectedFilters.Category.length === 0 ||
+      selectedFilters.Category.includes(
+        p.category
+      );
 
     return (
       priceMatch &&
@@ -167,8 +183,23 @@ const Page = () => {
       caseMaterialMatch &&
       crystalTypeMatch &&
       waterResistanceMatch &&
-      movementMatch
+      movementMatch &&
+      categoryMatch
     );
+  });
+
+  const sortedProducts = [
+    ...filteredProducts,
+  ].sort((a, b) => {
+    if (sortValue === "price-asc")
+      return a.price - b.price;
+    if (sortValue === "price-desc")
+      return b.price - a.price;
+    if (sortValue === "name-asc")
+      return a.name.localeCompare(b.name);
+    if (sortValue === "name-desc")
+      return b.name.localeCompare(a.name);
+    return 0;
   });
 
   return (
@@ -176,13 +207,6 @@ const Page = () => {
       <Hero />
 
       <div className="max-w-7xl mx-auto py-10 px-4">
-        <div className="flex justify-between">
-          <h1 className="text-3xl font-serif mb-8 text-start">
-            {product.length} Products
-          </h1>
-          <button>sort by</button>
-        </div>
-
         <div className="flex flex-col md:flex-row gap-8">
           <div className="md:w-1/4">
             <PriceSlider
@@ -198,13 +222,26 @@ const Page = () => {
             />
           </div>
 
-          <div className="md:w-3/4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredProducts.map((product) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-              />
-            ))}
+          <div className="md:w-3/4">
+            <div className="flex pl-5 justify-between items-center">
+              <h1 className="text-sm font-sans mb-8 text-start">
+                {sortedProducts.length} Products
+              </h1>
+              <div>
+                <SortButton
+                  value={sortValue}
+                  onChange={setSortValue}
+                />
+              </div>
+            </div>
+            <div className=" grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {sortedProducts.map((product) => (
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                />
+              ))}
+            </div>
           </div>
         </div>
       </div>
