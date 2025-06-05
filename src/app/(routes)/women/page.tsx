@@ -1,13 +1,37 @@
 "use client";
 import Hero from "@/components/women/Hero";
-import { product } from "@/data/product";
 import ProductCard from "@/components/product/ProductCard";
 import FilterBar from "@/components/product/FilterBar";
-import { useMemo, useState } from "react";
 import PriceSlider from "@/components/product/PriceSlider";
 import { SortButton } from "@/components/product/SortButton";
+import { useSearchParams } from "next/navigation";
+import {
+  SlidersHorizontal,
+  X,
+} from "lucide-react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import { ProductProps } from "@/types";
+import { getProducts } from "@/services/productService";
+import { getCategories } from "@/services/categoryService"; // Make sure this path is correct
 
 const Page = () => {
+  const searchParams = useSearchParams();
+  const category =
+    searchParams.get("category") || "";
+
+  const [products, setProducts] = useState<
+    ProductProps[]
+  >([]);
+  const [categories, setCategories] = useState<
+    { id: string; name: string }[]
+  >([]);
+  const [filterBarOpen, setFilterBarOpen] =
+    useState(false);
+
   const [selectedFilters, setSelectedFilters] =
     useState<Record<string, string[]>>({
       Gender: ["Women"],
@@ -17,27 +41,41 @@ const Page = () => {
       CrystalType: [],
       WaterResistance: [],
       Movement: [],
-      Category: [],
+      Category: category ? [category] : [],
     });
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [priceRange, setPriceRange] = useState<
     [number, number]
-  >(() => {
-    const prices = product.map(
-      (p) => p.price || 0
-    );
-    const min = Math.min(...prices);
-    const max = Math.max(...prices);
-    return [min, max];
-  });
-
+  >([0, 0]);
   const [selectedPrice, setSelectedPrice] =
-    useState<[number, number]>(priceRange);
+    useState<[number, number]>([0, 0]);
+  const [sortValue, setSortValue] =
+    useState("price-asc");
 
-  // Dynamically extract unique filter options from product data
+  useEffect(() => {
+    const fetchData = async () => {
+      const [productData, categoryData] =
+        await Promise.all([
+          getProducts(),
+          getCategories(),
+        ]);
+      setProducts(productData);
+      setCategories(categoryData);
+
+      const prices = productData.map(
+        (p: ProductProps) => p.price || 0
+      );
+      const min = Math.min(...prices);
+      const max = Math.max(...prices);
+      setPriceRange([min, max]);
+      setSelectedPrice([min, max]);
+    };
+
+    fetchData();
+  }, []);
+
   const filters = useMemo(() => {
-    // const genderSet = new Set<string>();
+    const genderSet = new Set<string>();
     const materialSet = new Set<string>();
     const caseSizeSet = new Set<string>();
     const caseMaterialSet = new Set<string>();
@@ -46,29 +84,38 @@ const Page = () => {
     const movementSet = new Set<string>();
     const categorySet = new Set<string>();
 
-    product.forEach((p) => {
-      // if (p.gender) genderSet.add(p.gender);
-      if (p.strap_material)
-        materialSet.add(p.strap_material);
-      if (p.case_size)
-        caseSizeSet.add(p.case_size);
-      if (p.case_material)
-        caseMaterialSet.add(p.case_material);
-      if (p.crystal_type)
-        crystalTypeSet.add(p.crystal_type);
-      if (p.water_resistance)
-        waterResistanceSet.add(
-          p.water_resistance
-        );
+    const categoryMap = new Map<string, string>();
+    categories.forEach((cat) =>
+      categoryMap.set(cat.id, cat.name)
+    );
+
+    products.forEach((p) => {
+      if (p.gender) genderSet.add(p.gender);
+      if (p.strapMaterial)
+        materialSet.add(p.strapMaterial);
+      if (p.caseSize) caseSizeSet.add(p.caseSize);
+      if (p.caseMaterial)
+        caseMaterialSet.add(p.caseMaterial);
+      if (p.crystalType)
+        crystalTypeSet.add(p.crystalType);
+      if (p.waterResistance)
+        waterResistanceSet.add(p.waterResistance);
       if (p.movement) movementSet.add(p.movement);
-      if (p.category) categorySet.add(p.category);
+      if (
+        p.categoryId &&
+        categoryMap.has(p.categoryId)
+      ) {
+        categorySet.add(
+          categoryMap.get(p.categoryId)!
+        );
+      }
     });
 
     return [
-      // {
-      //   name: "Gender",
-      //   options: Array.from(genderSet),
-      // },
+      {
+        name: "Gender",
+        options: Array.from(genderSet),
+      },
       {
         name: "Material",
         options: Array.from(materialSet),
@@ -76,11 +123,7 @@ const Page = () => {
       {
         name: "Case Size",
         options: Array.from(caseSizeSet).sort(
-          (a, b) => {
-            const numA = parseInt(a);
-            const numB = parseInt(b);
-            return numA - numB;
-          }
+          (a, b) => parseInt(a) - parseInt(b)
         ),
       },
       {
@@ -95,11 +138,9 @@ const Page = () => {
         name: "Water Resistance",
         options: Array.from(
           waterResistanceSet
-        ).sort((a, b) => {
-          const numA = parseInt(a);
-          const numB = parseInt(b);
-          return numA - numB;
-        }),
+        ).sort(
+          (a, b) => parseInt(a) - parseInt(b)
+        ),
       },
       {
         name: "Movement",
@@ -110,10 +151,15 @@ const Page = () => {
         options: Array.from(categorySet),
       },
     ];
-  }, []);
+  }, [products, categories]);
 
-  const [sortValue, setSortValue] =
-    useState("price-asc");
+  const categoryMap = useMemo(() => {
+    const map = new Map<string, string>();
+    categories.forEach((cat) =>
+      map.set(cat.id, cat.name)
+    );
+    return map;
+  }, [categories]);
 
   const handleFilterChange = (
     filterName: string,
@@ -131,62 +177,69 @@ const Page = () => {
     setSelectedPrice([newValue[0], newValue[1]]);
   };
 
-  const filteredProducts = product.filter((p) => {
-    const priceMatch =
-      p.price >= selectedPrice[0] &&
-      p.price <= selectedPrice[1];
-    const genderMatch =
-      selectedFilters.Gender.length === 0 ||
-      selectedFilters.Gender.includes(p.gender);
-    const materialMatch =
-      selectedFilters.Material.length === 0 ||
-      selectedFilters.Material.includes(
-        p.strap_material
-      );
-    const caseSizeMatch =
-      selectedFilters.CaseSize.length === 0 ||
-      selectedFilters.CaseSize.includes(
-        p.case_size
-      );
-    const caseMaterialMatch =
-      selectedFilters.CaseMaterial.length === 0 ||
-      selectedFilters.CaseMaterial.includes(
-        p.case_material
-      );
-    const crystalTypeMatch =
-      selectedFilters.CrystalType.length === 0 ||
-      selectedFilters.CrystalType.includes(
-        p.crystal_type
-      );
-    const waterResistanceMatch =
-      selectedFilters.WaterResistance.length ===
-        0 ||
-      selectedFilters.WaterResistance.includes(
-        p.water_resistance
-      );
-    const movementMatch =
-      selectedFilters.Movement.length === 0 ||
-      selectedFilters.Movement.includes(
-        p.movement
-      );
-    const categoryMatch =
-      selectedFilters.Category.length === 0 ||
-      selectedFilters.Category.includes(
-        p.category
-      );
+  const filteredProducts = products.filter(
+    (p) => {
+      const priceMatch =
+        p.price >= selectedPrice[0] &&
+        p.price <= selectedPrice[1];
+      const genderMatch =
+        selectedFilters.Gender.length === 0 ||
+        selectedFilters.Gender.includes(p.gender);
+      const materialMatch =
+        selectedFilters.Material.length === 0 ||
+        selectedFilters.Material.includes(
+          p.strapMaterial
+        );
+      const caseSizeMatch =
+        selectedFilters.CaseSize.length === 0 ||
+        selectedFilters.CaseSize.includes(
+          p.caseSize
+        );
+      const caseMaterialMatch =
+        selectedFilters.CaseMaterial.length ===
+          0 ||
+        selectedFilters.CaseMaterial.includes(
+          p.caseMaterial
+        );
+      const crystalTypeMatch =
+        selectedFilters.CrystalType.length ===
+          0 ||
+        selectedFilters.CrystalType.includes(
+          p.crystalType
+        );
+      const waterResistanceMatch =
+        selectedFilters.WaterResistance.length ===
+          0 ||
+        selectedFilters.WaterResistance.includes(
+          p.waterResistance
+        );
+      const movementMatch =
+        selectedFilters.Movement.length === 0 ||
+        selectedFilters.Movement.includes(
+          p.movement
+        );
 
-    return (
-      priceMatch &&
-      genderMatch &&
-      materialMatch &&
-      caseSizeMatch &&
-      caseMaterialMatch &&
-      crystalTypeMatch &&
-      waterResistanceMatch &&
-      movementMatch &&
-      categoryMatch
-    );
-  });
+      const categoryName =
+        categoryMap.get(p.categoryId || "") || "";
+      const categoryMatch =
+        selectedFilters.Category.length === 0 ||
+        selectedFilters.Category.includes(
+          categoryName
+        );
+
+      return (
+        priceMatch &&
+        genderMatch &&
+        materialMatch &&
+        caseSizeMatch &&
+        caseMaterialMatch &&
+        crystalTypeMatch &&
+        waterResistanceMatch &&
+        movementMatch &&
+        categoryMatch
+      );
+    }
+  );
 
   const sortedProducts = [
     ...filteredProducts,
@@ -205,10 +258,9 @@ const Page = () => {
   return (
     <div>
       <Hero />
-
       <div className="max-w-7xl mx-auto py-10 px-4">
         <div className="flex flex-col md:flex-row gap-8">
-          <div className="md:w-1/4">
+          <div className="md:w-1/4 hidden md:block">
             <PriceSlider
               selectedPrice={selectedPrice}
               onPriceChange={handlePriceChange}
@@ -224,17 +276,24 @@ const Page = () => {
 
           <div className="md:w-3/4">
             <div className="flex pl-5 justify-between items-center">
-              <h1 className="text-sm font-sans mb-8 text-start">
-                {product.length} Products
+              <h1 className="text-sm hidden md:flex font-sans mb-8 text-start">
+                {sortedProducts.length} Products
               </h1>
-              <div>
-                <SortButton
-                  value={sortValue}
-                  onChange={setSortValue}
-                />
-              </div>
+              <SortButton
+                value={sortValue}
+                onChange={setSortValue}
+              />
+              <button
+                className="flex md:hidden gap-2 ml-2 items-center bg-luxury-gold px-2 py-1 text-black w-full justify-center"
+                onClick={() =>
+                  setFilterBarOpen(true)
+                }
+              >
+                <SlidersHorizontal size={13} />
+                Filter
+              </button>
             </div>
-            <div className=" grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {sortedProducts.map((product) => (
                 <ProductCard
                   key={product.id}
@@ -245,6 +304,38 @@ const Page = () => {
           </div>
         </div>
       </div>
+
+      {filterBarOpen && (
+        <>
+          <div
+            className="fixed inset-0 z-40 bg-black/50"
+            onClick={() =>
+              setFilterBarOpen(false)
+            }
+          />
+          <div className="fixed right-0 top-0 z-50 bg-black w-72 max-w-full h-screen shadow-lg overflow-auto">
+            <div className="flex justify-end p-4">
+              <X
+                className="cursor-pointer text-white"
+                onClick={() =>
+                  setFilterBarOpen(false)
+                }
+              />
+            </div>
+            <PriceSlider
+              selectedPrice={selectedPrice}
+              onPriceChange={handlePriceChange}
+              min={priceRange[0]}
+              max={priceRange[1]}
+            />
+            <FilterBar
+              filters={filters}
+              selectedFilters={selectedFilters}
+              onFilterChange={handleFilterChange}
+            />
+          </div>
+        </>
+      )}
     </div>
   );
 };

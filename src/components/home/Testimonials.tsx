@@ -1,118 +1,131 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
-import { testimonials } from "@/data/testimonials";
+import React, { useState } from "react";
 import {
+  Star,
   ChevronLeft,
   ChevronRight,
-  Star,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { testimonials } from "@/data/testimonials";
+import Image from "next/image";
 
-const Testimonials = () => {
-  const [
-    activeTestimonial,
-    setActiveTestimonial,
-  ] = useState(0);
+const Testimonials: React.FC = () => {
+  const [activeIndex, setActiveIndex] =
+    useState(0);
+  const [animating, setAnimating] =
+    useState(false);
 
-  const onNext = () => {
-    setActiveTestimonial((prev) =>
-      prev >= testimonials.length - 1
-        ? 0
-        : prev + 1
+  const goToNext = () => {
+    if (animating) return;
+    setAnimating(true);
+    setActiveIndex(
+      (prev) => (prev + 1) % testimonials.length
     );
+    setTimeout(() => setAnimating(false), 500);
   };
 
-  const onPrev = () => {
-    setActiveTestimonial((prev) =>
-      prev <= 0
-        ? testimonials.length - 1
-        : prev - 1
+  const goToPrev = () => {
+    if (animating) return;
+    setAnimating(true);
+    setActiveIndex(
+      (prev) =>
+        (prev - 1 + testimonials.length) %
+        testimonials.length
     );
+    setTimeout(() => setAnimating(false), 500);
   };
-
-  useEffect(() => {
-    setInterval(() => {
-      onNext();
-    }, 8000);
-  }, []);
-
-  //   const testimonial =
-  //     testimonials[activeTestimonial];
 
   return (
-    <section className="py-20 bg-black/20">
+    <section className="py-20 relative overflow-hidden">
       {/* Decorative elements */}
       <div className="absolute top-0 left-0 w-64 h-64 bg-luxury-gold/5 rounded-full blur-3xl"></div>
       <div className="absolute bottom-0 right-0 w-64 h-64 bg-luxury-green/5 rounded-full blur-3xl"></div>
 
-      <div className="container mx-auto px-4 md:px-8">
-        <h2 className="font-serif text-3xl md:text-4xl font-semibold text-center mb-16">
-          Client{" "}
-          <span className="text-luxury-gold">
-            Testimonials
-          </span>
-          <p className="text-sm opacity-80 mt-4">
+      <div className="container mx-auto px-4 md:px-8 relative z-10">
+        <div className="max-w-3xl mx-auto text-center mb-16">
+          <h2 className="font-serif text-3xl md:text-4xl font-semibold mb-4">
+            Client{" "}
+            <span className="text-luxury-gold">
+              Testimonials
+            </span>
+          </h2>
+          <p className="text-text-muted">
             Discover what our esteemed clients
             have to say about their Chronomaster
             experience.
           </p>
-        </h2>
+        </div>
 
-        <div className="flex flex-col lg:flex-row gap-12 items-center">
-          {/* Testimonial Card */}
-
-          <div className="relative overflow-hidden max-w-4xl mx-auto">
+        <div className="relative max-w-4xl mx-auto">
+          {/* Testimonial Carousel */}
+          <div className="overflow-hidden">
             <div
-              className="flex transition-transform duration-500 ease-in-out"
-              style={{
-                transform: `translateX(-${
-                  activeTestimonial * 100
-                }%)`,
-              }}
+              className="relative transition-all duration-500 ease-in-out"
+              style={{ height: "300px" }}
             >
               {testimonials.map(
                 (testimonial, index) => (
                   <div
                     key={index}
-                    className="min-w-full px-4 py-6 border rounded-sm border-luxury-gold shadow-lg flex-shrink-0"
+                    className={`absolute inset-0 transition-all duration-500 ease-in-out ${
+                      index === activeIndex
+                        ? "opacity-100 translate-x-0"
+                        : index < activeIndex ||
+                          (activeIndex === 0 &&
+                            index ===
+                              testimonials.length -
+                                1)
+                        ? "opacity-0 -translate-x-full"
+                        : "opacity-0 translate-x-full"
+                    }`}
                   >
-                    {/* Stars */}
-                    <div className="flex gap-2">
-                      {[...Array(5)].map(
-                        (_, index) => (
-                          <Star
-                            key={index}
-                            size={20}
-                            className={
-                              index <
-                              testimonial.rating
-                                ? "text-luxury-gold"
-                                : "text-gray-600"
+                    <div className="bg-background-darker bg-opacity-50 backdrop-blur-sm p-8 md:p-10 rounded-lg border border-luxury-gold/10">
+                      <div className="flex items-center space-x-1 mb-6">
+                        {[...Array(5)].map(
+                          (_, i) => (
+                            <Star
+                              key={i}
+                              size={18}
+                              className={
+                                i <
+                                testimonial.rating
+                                  ? "text-luxury-gold"
+                                  : "text-text-muted opacity-30"
+                              }
+                              fill={
+                                i <
+                                testimonial.rating
+                                  ? "currentColor"
+                                  : "none"
+                              }
+                            />
+                          )
+                        )}
+                      </div>
+
+                      <blockquote className="text-lg md:text-xl font-serif italic mb-8">
+                        &quot;{testimonial.quote}
+                        &quot;
+                      </blockquote>
+
+                      <div className="flex items-center">
+                        <div className="w-12 h-12 relative rounded-full overflow-hidden mr-4">
+                          <Image
+                            src={
+                              testimonial.avatar
                             }
+                            alt={testimonial.name}
+                            fill
+                            className="w-full h-full object-cover"
                           />
-                        )
-                      )}
-                    </div>
-
-                    {/* Review */}
-                    <p className="text-xl italic font-serif max-w-3xl text-text-muted mt-7">
-                      {testimonial.quote}
-                    </p>
-
-                    {/* Reviewer */}
-                    <div className="flex items-center mt-5">
-                      <img
-                        src={testimonial.avatar}
-                        alt="Reviewer"
-                        className="w-14 h-14 rounded-full object-cover"
-                      />
-                      <div className="ml-4">
-                        <h3 className="text-md font-semibold text-white">
-                          {testimonial.name}
-                        </h3>
-                        <p className="text-sm text-text-muted">
-                          {testimonial.location}
-                        </p>
+                        </div>
+                        <div>
+                          <p className="font-medium">
+                            {testimonial.name}
+                          </p>
+                          <p className="text-text-muted text-sm">
+                            {testimonial.location}
+                          </p>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -120,39 +133,42 @@ const Testimonials = () => {
               )}
             </div>
           </div>
-        </div>
-        {/* buttons */}
-        <div className="flex gap-4 mt-10 items-center justify-center">
-          <button
-            onClick={onPrev}
-            className="w-10 h-10 rounded-full border border-luxury-gold/30 flex items-center justify-center text-luxury-gold hover:bg-luxury-gold hover:bg-opacity-10 transition-colors duration-300"
-            aria-label="Previous testimonial"
-          >
-            <ChevronLeft size={20} />
-          </button>
-          <div className="flex gap-3 justify-center items-center">
-            {testimonials.map((_, index) => (
-              <button
-                key={index}
-                onClick={() =>
-                  setActiveTestimonial(index)
-                }
-                className={`rounded-full transition-all ${
-                  activeTestimonial == index
-                    ? "w-7 bg-luxury-gold"
-                    : "w-2 bg-gray-500"
-                }
-                 h-2 `}
-              />
-            ))}
+
+          {/* Navigation Buttons */}
+          <div className="flex justify-center mt-8 space-x-4">
+            <button
+              onClick={goToPrev}
+              className="w-10 h-10 rounded-full border border-luxury-gold/30 flex items-center justify-center text-luxury-gold hover:bg-luxury-gold hover:bg-opacity-10 transition-colors duration-300"
+              aria-label="Previous testimonial"
+            >
+              <ChevronLeft size={20} />
+            </button>
+            <div className="flex space-x-2 items-center">
+              {testimonials.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() =>
+                    setActiveIndex(index)
+                  }
+                  className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                    activeIndex === index
+                      ? "bg-luxury-gold w-6"
+                      : "bg-gray-300"
+                  }`}
+                  aria-label={`Go to testimonial ${
+                    index + 1
+                  }`}
+                />
+              ))}
+            </div>
+            <button
+              onClick={goToNext}
+              className="w-10 h-10 rounded-full border border-luxury-gold/30 flex items-center justify-center text-luxury-gold hover:bg-luxury-gold hover:bg-opacity-10 transition-colors duration-300"
+              aria-label="Next testimonial"
+            >
+              <ChevronRight size={20} />
+            </button>
           </div>
-          <button
-            onClick={onNext}
-            className="w-10 h-10 rounded-full border border-luxury-gold/30 flex items-center justify-center text-luxury-gold hover:bg-luxury-gold hover:bg-opacity-10 transition-colors duration-300"
-            aria-label="Previous testimonial"
-          >
-            <ChevronRight size={20} />
-          </button>
         </div>
       </div>
     </section>

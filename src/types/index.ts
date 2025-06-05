@@ -10,11 +10,11 @@ export interface CollectionType {
 
 export interface CategoryType {
   name: string;
-  shortDescription: string;
   description: string;
   features: string[];
   startingPrice?: string;
   image?: string;
+  link?: string;
 }
 
 export interface TestimonialType {
@@ -26,20 +26,30 @@ export interface TestimonialType {
 }
 
 export interface ProductProps {
-  id: string;
+  id?: string;
   name: string;
-  slug: string;
+  slug?: string;
   gender: string;
+  categoryId?: string;
   price: number;
-  currency: string;
+  currency?: string;
   image: string;
   images?: string[];
   description: string;
-  case_size: string;
-  case_material: string;
-  crystal_type: string;
-  water_resistance: string;
+  caseSize: string;
+  caseMaterial: string;
+  crystalType: string;
+  waterResistance: string;
   movement: string;
-  strap_material: string;
+  strapMaterial: string;
   features: string[];
+  categoryName?: string;
+}
+
+export interface UserProps {
+  name: string;
+  email: string;
+  password: string;
+  phone: string;
+  role: string;
 }

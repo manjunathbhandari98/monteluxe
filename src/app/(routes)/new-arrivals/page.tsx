@@ -1,30 +1,17 @@
 "use client";
 import Hero from "@/components/women/Hero";
+import { product } from "@/data/product";
 import ProductCard from "@/components/product/ProductCard";
 import FilterBar from "@/components/product/FilterBar";
+import { useMemo, useState } from "react";
 import PriceSlider from "@/components/product/PriceSlider";
 import { SortButton } from "@/components/product/SortButton";
-import { useSearchParams } from "next/navigation";
 import {
   SlidersHorizontal,
   X,
 } from "lucide-react";
-import {
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
-import { ProductProps } from "@/types";
-import { getProducts } from "@/services/productService";
 
 const Page = () => {
-  const searchParams = useSearchParams();
-  const category =
-    searchParams.get("category") || "";
-
-  const [products, setProducts] = useState<
-    ProductProps[]
-  >([]);
   const [filterBarOpen, setFilterBarOpen] =
     useState(false);
   const [selectedFilters, setSelectedFilters] =
@@ -36,33 +23,25 @@ const Page = () => {
       CrystalType: [],
       WaterResistance: [],
       Movement: [],
-      Category: category ? [category] : [],
+      Category: [],
     });
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [priceRange, setPriceRange] = useState<
     [number, number]
-  >([0, 0]);
+  >(() => {
+    const prices = product.map(
+      (p) => p.price || 0
+    );
+    const min = Math.min(...prices);
+    const max = Math.max(...prices);
+    return [min, max];
+  });
+
   const [selectedPrice, setSelectedPrice] =
-    useState<[number, number]>([0, 0]);
-  const [sortValue, setSortValue] =
-    useState("price-asc");
+    useState<[number, number]>(priceRange);
 
-  useEffect(() => {
-    const fetchProducts = async () => {
-      const data = await getProducts();
-      setProducts(data);
-      const prices = data.map(
-        (p: ProductProps) => p.price || 0
-      );
-      const min = Math.min(...prices);
-      const max = Math.max(...prices);
-      setPriceRange([min, max]);
-      setSelectedPrice([min, max]);
-    };
-
-    fetchProducts();
-  }, []);
-
+  // Dynamically extract unique filter options from product data
   const filters = useMemo(() => {
     const genderSet = new Set<string>();
     const materialSet = new Set<string>();
@@ -73,20 +52,22 @@ const Page = () => {
     const movementSet = new Set<string>();
     const categorySet = new Set<string>();
 
-    products.forEach((p) => {
+    product.forEach((p) => {
       if (p.gender) genderSet.add(p.gender);
-      if (p.strapMaterial)
-        materialSet.add(p.strapMaterial);
-      if (p.caseSize) caseSizeSet.add(p.caseSize);
-      if (p.caseMaterial)
-        caseMaterialSet.add(p.caseMaterial);
-      if (p.crystalType)
-        crystalTypeSet.add(p.crystalType);
-      if (p.waterResistance)
-        waterResistanceSet.add(p.waterResistance);
+      if (p.strap_material)
+        materialSet.add(p.strap_material);
+      if (p.case_size)
+        caseSizeSet.add(p.case_size);
+      if (p.case_material)
+        caseMaterialSet.add(p.case_material);
+      if (p.crystal_type)
+        crystalTypeSet.add(p.crystal_type);
+      if (p.water_resistance)
+        waterResistanceSet.add(
+          p.water_resistance
+        );
       if (p.movement) movementSet.add(p.movement);
-      if (p.categoryId)
-        categorySet.add(p.categoryId);
+      if (p.category) categorySet.add(p.category);
     });
 
     return [
@@ -101,7 +82,11 @@ const Page = () => {
       {
         name: "Case Size",
         options: Array.from(caseSizeSet).sort(
-          (a, b) => parseInt(a) - parseInt(b)
+          (a, b) => {
+            const numA = parseInt(a);
+            const numB = parseInt(b);
+            return numA - numB;
+          }
         ),
       },
       {
@@ -116,9 +101,11 @@ const Page = () => {
         name: "Water Resistance",
         options: Array.from(
           waterResistanceSet
-        ).sort(
-          (a, b) => parseInt(a) - parseInt(b)
-        ),
+        ).sort((a, b) => {
+          const numA = parseInt(a);
+          const numB = parseInt(b);
+          return numA - numB;
+        }),
       },
       {
         name: "Movement",
@@ -129,7 +116,10 @@ const Page = () => {
         options: Array.from(categorySet),
       },
     ];
-  }, [products]);
+  }, []);
+
+  const [sortValue, setSortValue] =
+    useState("price-asc");
 
   const handleFilterChange = (
     filterName: string,
@@ -147,66 +137,63 @@ const Page = () => {
     setSelectedPrice([newValue[0], newValue[1]]);
   };
 
-  const filteredProducts = products.filter(
-    (p) => {
-      const priceMatch =
-        p.price >= selectedPrice[0] &&
-        p.price <= selectedPrice[1];
-      const genderMatch =
-        selectedFilters.Gender.length === 0 ||
-        selectedFilters.Gender.includes(p.gender);
-      const materialMatch =
-        selectedFilters.Material.length === 0 ||
-        selectedFilters.Material.includes(
-          p.strapMaterial
-        );
-      const caseSizeMatch =
-        selectedFilters.CaseSize.length === 0 ||
-        selectedFilters.CaseSize.includes(
-          p.caseSize
-        );
-      const caseMaterialMatch =
-        selectedFilters.CaseMaterial.length ===
-          0 ||
-        selectedFilters.CaseMaterial.includes(
-          p.caseMaterial
-        );
-      const crystalTypeMatch =
-        selectedFilters.CrystalType.length ===
-          0 ||
-        selectedFilters.CrystalType.includes(
-          p.crystalType
-        );
-      const waterResistanceMatch =
-        selectedFilters.WaterResistance.length ===
-          0 ||
-        selectedFilters.WaterResistance.includes(
-          p.waterResistance
-        );
-      const movementMatch =
-        selectedFilters.Movement.length === 0 ||
-        selectedFilters.Movement.includes(
-          p.movement
-        );
-      // const categoryMatch =
-      //   selectedFilters.Category.length === 0 ||
-      //   selectedFilters.Category.includes(
-      //     p.categoryId
-      //   );
-
-      return (
-        priceMatch &&
-        genderMatch &&
-        materialMatch &&
-        caseSizeMatch &&
-        caseMaterialMatch &&
-        crystalTypeMatch &&
-        waterResistanceMatch &&
-        movementMatch
-        // categoryMatch
+  const filteredProducts = product.filter((p) => {
+    const priceMatch =
+      p.price >= selectedPrice[0] &&
+      p.price <= selectedPrice[1];
+    const genderMatch =
+      selectedFilters.Gender.length === 0 ||
+      selectedFilters.Gender.includes(p.gender);
+    const materialMatch =
+      selectedFilters.Material.length === 0 ||
+      selectedFilters.Material.includes(
+        p.strap_material
       );
-    }
-  );
+    const caseSizeMatch =
+      selectedFilters.CaseSize.length === 0 ||
+      selectedFilters.CaseSize.includes(
+        p.case_size
+      );
+    const caseMaterialMatch =
+      selectedFilters.CaseMaterial.length === 0 ||
+      selectedFilters.CaseMaterial.includes(
+        p.case_material
+      );
+    const crystalTypeMatch =
+      selectedFilters.CrystalType.length === 0 ||
+      selectedFilters.CrystalType.includes(
+        p.crystal_type
+      );
+    const waterResistanceMatch =
+      selectedFilters.WaterResistance.length ===
+        0 ||
+      selectedFilters.WaterResistance.includes(
+        p.water_resistance
+      );
+    const movementMatch =
+      selectedFilters.Movement.length === 0 ||
+      selectedFilters.Movement.includes(
+        p.movement
+      );
+
+    const categoryMatch =
+      selectedFilters.Category.length === 0 ||
+      selectedFilters.Category.includes(
+        p.category
+      );
+
+    return (
+      priceMatch &&
+      genderMatch &&
+      materialMatch &&
+      caseSizeMatch &&
+      caseMaterialMatch &&
+      crystalTypeMatch &&
+      waterResistanceMatch &&
+      movementMatch &&
+      categoryMatch
+    );
+  });
 
   const sortedProducts = [
     ...filteredProducts,
@@ -234,11 +221,15 @@ const Page = () => {
               min={priceRange[0]}
               max={priceRange[1]}
             />
-            <FilterBar
-              filters={filters}
-              selectedFilters={selectedFilters}
-              onFilterChange={handleFilterChange}
-            />
+            <div className="hidden md:block">
+              <FilterBar
+                filters={filters}
+                selectedFilters={selectedFilters}
+                onFilterChange={
+                  handleFilterChange
+                }
+              />
+            </div>
           </div>
 
           <div className="md:w-3/4">
@@ -246,10 +237,12 @@ const Page = () => {
               <h1 className="text-sm hidden md:flex font-sans mb-8 text-start">
                 {sortedProducts.length} Products
               </h1>
-              <SortButton
-                value={sortValue}
-                onChange={setSortValue}
-              />
+              <div className="md:mr-0 mr-2">
+                <SortButton
+                  value={sortValue}
+                  onChange={setSortValue}
+                />
+              </div>
               <button
                 className="flex md:hidden gap-2 ml-2 items-center bg-luxury-gold px-2 py-1 text-black w-full justify-center"
                 onClick={() =>
@@ -260,7 +253,7 @@ const Page = () => {
                 Filter
               </button>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className=" grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {sortedProducts.map((product) => (
                 <ProductCard
                   key={product.id}
@@ -271,7 +264,6 @@ const Page = () => {
           </div>
         </div>
       </div>
-
       {filterBarOpen && (
         <>
           <div

@@ -1,13 +1,13 @@
 // src/app/layout.tsx
 
-import Header from "@/components/layout/Header";
 import "./globals.css";
 import {
   Libre_Baskerville,
   Work_Sans,
 } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
-import Footer from "@/components/layout/Footer";
+import LoadingProvider from "@/components/loader/LoadingProvider";
+import LayoutWrapper from "@/components/layout/LayoutWrapper";
 
 // Load fonts with desired weights/styles
 const libreBaskerville = Libre_Baskerville({
@@ -50,16 +50,18 @@ export default function RootLayout({
       className={`${libreBaskerville.variable} ${workSans.variable}`}
     >
       <body>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <Header />
-          {children}
-          <Footer />
-        </ThemeProvider>
+        <LoadingProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <LayoutWrapper>
+              {children}
+            </LayoutWrapper>
+          </ThemeProvider>
+        </LoadingProvider>
       </body>
     </html>
   );

@@ -19,7 +19,7 @@ const ProductDetails = ({
   const [selectedImage, setSelectedImage] =
     useState(0);
   const [selectedSize, setSelectedSize] =
-    useState(product.case_size || "");
+    useState(product.caseSize || "");
 
   const images = [
     product.image,
@@ -28,30 +28,40 @@ const ProductDetails = ({
 
   const specs = {
     Gender: product.gender,
-    "Case Material": product.case_material,
-    "Crystal Type": product.crystal_type,
-    "Water Resistance": product.water_resistance,
+    "Case Material": product.caseMaterial,
+    "Crystal Type": product.crystalType,
+    "Water Resistance": product.waterResistance,
     Movement: product.movement,
-    Strap: product.strap_material,
+    Strap: product.strapMaterial,
   };
 
   return (
     <div className="pt-20">
       <div className="container mx-auto px-4 md:px-8 py-12">
+        {/* Wishlist & Share Buttons (Mobile Only) */}
+        <div className="flex justify-end gap-4 md:hidden mb-4 px-3">
+          <button className="text-text-muted hover:text-luxury-gold transition">
+            <Heart size={22} />
+          </button>
+          <button className="text-text-muted hover:text-luxury-gold transition">
+            <Share2 size={22} />
+          </button>
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           {/* Image Gallery */}
           <div className="space-y-4">
-            <div className="aspect-square overflow-hidden rounded-lg bg-background-darker">
-              <div className="relative w-full aspect-square overflow-hidden rounded-lg bg-background-darker">
-                <Image
-                  src={images[selectedImage]}
-                  alt={product.name}
-                  fill
-                  className="object-cover"
-                />
-              </div>
+            <div className="aspect-square overflow-hidden rounded-lg bg-background-darker relative w-full">
+              <Image
+                src={`/images/${images[selectedImage]}`}
+                alt={product.name}
+                fill
+                priority
+                className="object-cover rounded-lg"
+              />
             </div>
-            <div className="grid grid-cols-4 gap-4">
+
+            <div className="grid grid-cols-4 sm:grid-cols-5 gap-2 sm:gap-4">
               {images.map((img, index) => (
                 <button
                   key={index}
@@ -65,12 +75,13 @@ const ProductDetails = ({
                   }`}
                 >
                   <Image
-                    src={img}
+                    src={`/images/${img}`}
                     alt={`${product.name} view ${
                       index + 1
                     }`}
                     width={100}
                     height={100}
+                    priority
                     className="w-full h-full object-cover"
                   />
                 </button>
@@ -81,34 +92,36 @@ const ProductDetails = ({
           {/* Product Info */}
           <div className="space-y-8">
             <div>
-              <h1 className="font-serif text-3xl md:text-4xl mb-4">
+              <h1 className="font-serif text-2xl sm:text-3xl md:text-4xl mb-4">
                 {product.name}
               </h1>
-              <p className="text-luxury-gold text-2xl font-serif">
+              <p className="text-luxury-gold text-xl sm:text-2xl font-serif">
                 {product.currency}{" "}
-                {product.price.toLocaleString()}
+                <span className="font-bold">
+                  {product.price.toLocaleString()}
+                </span>
               </p>
             </div>
 
-            <p className="text-text-muted">
+            <p className="text-text-muted text-sm sm:text-base">
               {product.description}
             </p>
 
             {/* Case Size Selection */}
-            {product.case_size && (
+            {product.caseSize && (
               <div>
                 <h3 className="text-sm uppercase tracking-wider mb-3">
                   Case Size
                 </h3>
-                <div className="flex space-x-4">
-                  {[product.case_size].map(
+                <div className="flex flex-wrap gap-4">
+                  {[product.caseSize].map(
                     (size) => (
                       <button
                         key={size}
                         onClick={() =>
                           setSelectedSize(size)
                         }
-                        className={`px-6 py-3 rounded border transition-all ${
+                        className={`px-6 py-2 sm:py-3 rounded border text-sm sm:text-base transition-all ${
                           selectedSize === size
                             ? "border-luxury-gold bg-luxury-gold/10 text-luxury-gold"
                             : "border-text-muted/30 hover:border-luxury-gold/50"
@@ -123,7 +136,7 @@ const ProductDetails = ({
             )}
 
             {/* Actions */}
-            <div className="flex space-x-4">
+            <div className="flex flex-col sm:flex-row gap-4">
               <Button
                 variant="primary"
                 size="large"
@@ -131,18 +144,20 @@ const ProductDetails = ({
               >
                 ADD TO BAG
               </Button>
-              <Button
-                variant="outline"
-                size="large"
-              >
-                <Heart size={20} />
-              </Button>
-              <Button
-                variant="outline"
-                size="large"
-              >
-                <Share2 size={20} />
-              </Button>
+              <div className="gap-4 hidden sm:flex">
+                <Button
+                  variant="outline"
+                  size="large"
+                >
+                  <Heart size={20} />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="large"
+                >
+                  <Share2 size={20} />
+                </Button>
+              </div>
             </div>
 
             {/* Features */}
@@ -170,56 +185,61 @@ const ProductDetails = ({
             )}
 
             {/* Benefits */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 border-t border-text-muted/10 pt-8">
-              <div className="flex items-center space-x-3">
-                <Shield
-                  className="text-luxury-gold"
-                  size={24}
-                />
-                <div>
-                  <p className="font-medium">
-                    5-Year Warranty
-                  </p>
-                  <p className="text-text-muted text-sm">
-                    International coverage
-                  </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 border-t border-text-muted/10 pt-8">
+              {[
+                {
+                  icon: (
+                    <Shield
+                      className="text-luxury-gold"
+                      size={24}
+                    />
+                  ),
+                  title: "5-Year Warranty",
+                  desc: "International coverage",
+                },
+                {
+                  icon: (
+                    <Clock
+                      className="text-luxury-gold"
+                      size={24}
+                    />
+                  ),
+                  title: "Free Returns",
+                  desc: "Within 30 days",
+                },
+                {
+                  icon: (
+                    <Package
+                      className="text-luxury-gold"
+                      size={24}
+                    />
+                  ),
+                  title: "Free Shipping",
+                  desc: "Worldwide delivery",
+                },
+              ].map((item, idx) => (
+                <div
+                  key={idx}
+                  className="flex items-center justify-center space-x-3"
+                >
+                  {item.icon}
+                  <div>
+                    <p className="font-medium">
+                      {item.title}
+                    </p>
+                    <p className="text-text-muted text-sm">
+                      {item.desc}
+                    </p>
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-center space-x-3">
-                <Clock
-                  className="text-luxury-gold"
-                  size={24}
-                />
-                <div>
-                  <p className="font-medium">
-                    Free Returns
-                  </p>
-                  <p className="text-text-muted text-sm">
-                    Within 30 days
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-3">
-                <Package
-                  className="text-luxury-gold"
-                  size={24}
-                />
-                <div>
-                  <p className="font-medium">
-                    Free Shipping
-                  </p>
-                  <p className="text-text-muted text-sm">
-                    Worldwide delivery
-                  </p>
-                </div>
-              </div>
+              ))}
             </div>
           </div>
         </div>
 
         {/* Technical Specifications */}
         <div className="mt-20">
-          <h2 className="font-serif text-2xl mb-8">
+          <h2 className="font-serif text-2xl mb-8 text-luxury-gold">
             Technical Specifications
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -230,10 +250,10 @@ const ProductDetails = ({
                     key={label}
                     className="border-b border-text-muted/10 pb-6"
                   >
-                    <p className="text-text-muted uppercase text-sm tracking-wider mb-2">
+                    <p className="text-text-muted font-bold uppercase text-sm tracking-wider mb-2">
                       {label}
                     </p>
-                    <p className="font-medium">
+                    <p className="font-medium ">
                       {value}
                     </p>
                   </div>

@@ -1,8 +1,10 @@
-import React from "react";
+"use client";
+import React, { useState } from "react";
 import {
   Minus,
   Plus,
   ShoppingCart,
+  Trash,
   X,
 } from "lucide-react";
 import Link from "next/link";
@@ -10,7 +12,7 @@ import Button from "@/components/custom/Button";
 import Image from "next/image";
 
 const Cart: React.FC = () => {
-  const cartItems = [
+  const [cartItems, setCartItems] = useState([
     {
       id: 1,
       name: "Royal Chronograph Masterpiece",
@@ -31,15 +33,48 @@ const Cart: React.FC = () => {
         "https://images.pexels.com/photos/1034065/pexels-photo-1034065.jpeg?auto=compress&cs=tinysrgb&w=800",
       quantity: 1,
     },
-  ];
+  ]);
+
+  const handleIncrease = (id: number) => {
+    setCartItems((prev) =>
+      prev.map((item) =>
+        item.id === id
+          ? {
+              ...item,
+              quantity: item.quantity + 1,
+            }
+          : item
+      )
+    );
+  };
+
+  const handleDecrease = (id: number) => {
+    setCartItems((prev) =>
+      prev.map((item) =>
+        item.id === id && item.quantity > 1
+          ? {
+              ...item,
+              quantity: item.quantity - 1,
+            }
+          : item
+      )
+    );
+  };
+
+  const handleRemove = (id: number) => {
+    setCartItems((prev) =>
+      prev.filter((item) => item.id !== id)
+    );
+  };
 
   const subtotal = cartItems.reduce(
     (acc, item) =>
       acc + item.price * item.quantity,
     0
   );
-  const shipping = 0; // Free shipping
-  const tax = subtotal * 0.08; // 8% tax
+
+  const shipping = 0;
+  const tax = subtotal * 0.08;
   const total = subtotal + shipping + tax;
 
   return (
@@ -49,31 +84,31 @@ const Cart: React.FC = () => {
           Shopping Cart
         </h1>
 
-        {cartItems.length > 1 ? (
+        {cartItems.length > 0 ? (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
             {/* Cart Items */}
             <div className="lg:col-span-2 space-y-6">
               {cartItems.map((item) => (
                 <div
                   key={item.id}
-                  className="bg-background-darker rounded-lg p-6 border border-luxury-gold/10"
+                  className="bg-background-darker rounded-lg p-4 sm:p-6 border border-luxury-gold/10"
                 >
-                  <div className="flex items-center gap-6">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
                     {/* Product Image */}
-                    <div className="w-24 h-24 relative rounded-lg overflow-hidden">
+                    <div className="w-full sm:w-24 sm:h-24 relative rounded-lg overflow-hidden">
                       <Image
                         src={item.image}
                         alt={item.name}
                         fill
-                        className="w-full h-full object-cover"
+                        className="object-cover"
                       />
                     </div>
 
-                    {/* Product Details */}
-                    <div className="flex-1">
+                    {/* Product Info + Quantity */}
+                    <div className="flex-1 w-full">
                       <Link
                         href={`/product/${item.id}`}
-                        className="font-serif text-lg hover:text-luxury-gold transition-colors"
+                        className="font-serif text-lg hover:text-luxury-gold transition-colors block"
                       >
                         {item.name}
                       </Link>
@@ -87,30 +122,65 @@ const Cart: React.FC = () => {
                         $
                         {item.price.toLocaleString()}
                       </p>
-                    </div>
 
-                    {/* Quantity Controls */}
-                    <div className="flex items-center space-x-4">
-                      <button className="p-1 text-text-muted hover:text-luxury-gold transition-colors">
-                        <Minus size={16} />
-                      </button>
-                      <span className="w-8 text-center">
-                        {item.quantity}
-                      </span>
-                      <button className="p-1 text-text-muted hover:text-luxury-gold transition-colors">
-                        <Plus size={16} />
-                      </button>
+                      {/* Quantity Controls */}
+                      <div className="flex items-center space-x-4 mt-4">
+                        <button
+                          onClick={() =>
+                            handleDecrease(
+                              item.id
+                            )
+                          }
+                          className="p-1 text-text-muted hover:text-luxury-gold transition-colors"
+                        >
+                          <Minus size={16} />
+                        </button>
+                        <span className="w-8 text-center">
+                          {item.quantity}
+                        </span>
+                        <button
+                          onClick={() =>
+                            handleIncrease(
+                              item.id
+                            )
+                          }
+                          className="p-1 text-text-muted hover:text-luxury-gold transition-colors"
+                        >
+                          <Plus size={16} />
+                        </button>
+                      </div>
                     </div>
 
                     {/* Remove Button */}
-                    <button className="p-2 text-text-muted hover:text-luxury-gold transition-colors">
-                      <X size={20} />
-                    </button>
+                    <div className="sm:self-start sm:mt-0 hidden sm:flex mt-4">
+                      <button
+                        onClick={() =>
+                          handleRemove(item.id)
+                        }
+                        className="p-2 text-text-muted hover:text-luxury-gold transition-colors"
+                      >
+                        <X size={20} />
+                      </button>
+                    </div>
+
+                    <div className="sm:self-start sm:mt-0 flex sm:hidden mt-4">
+                      <Button
+                        onClick={() =>
+                          handleRemove(item.id)
+                        }
+                        variant="outline"
+                        className="p-2 text-text-muted hover:text-luxury-gold transition-colors"
+                      >
+                        <h3 className="flex gap-1 items-center">
+                          <Trash size={14} />
+                          Remove
+                        </h3>
+                      </Button>
+                    </div>
                   </div>
                 </div>
               ))}
 
-              {/* Continue Shopping */}
               <Link
                 href="/collections"
                 className="inline-block text-luxury-gold hover:text-luxury-gold/80 transition-colors mt-6"

@@ -6,22 +6,20 @@ const Hero = () => {
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    // Simulate image loading
     const timer = setTimeout(() => {
       setIsLoaded(true);
     }, 100);
-
     return () => clearTimeout(timer);
   }, []);
 
   return (
-    <div className="relative w-full h-[90vh] overflow-hidden">
+    <div className="relative w-full md:h-[80vh] h-[50vh] overflow-hidden">
       {/* Background image */}
       <Image
         src="/images/classic.jpg"
         alt="Hero Image"
         fill
-        className={`absolute object-cover inset-0 bg-cover bg-center transition-opacity duration-1000 ${
+        className={`absolute object-cover inset-0 transition-opacity duration-1000 ${
           isLoaded ? "opacity-100" : "opacity-0"
         }`}
         priority
@@ -32,21 +30,20 @@ const Hero = () => {
 
       {/* Content */}
       <div
-        className={`absolute z-20 bottom-25 w-full text-white  text-center space-y-4
-            transition-all duration-1000 delay-300 transform ${
-              isLoaded
-                ? "translate-y-0 opacity-100"
-                : "translate-y-10 opacity-0"
-            }
-            `}
+        className={`absolute z-20 w-full px-4 sm:px-10 text-white flex flex-col items-center justify-center text-center top-1/2 transform -translate-y-1/2 space-y-4
+        transition-all duration-1000 delay-300 ${
+          isLoaded
+            ? "translate-y-0 opacity-100"
+            : "translate-y-10 opacity-0"
+        }`}
       >
-        <h1 className="text-2xl md:text-4xl font-bold leading-tight font-serif">
+        <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold leading-tight font-serif">
           Women&apos;s{" "}
           <span className="text-luxury-gold">
             Timepieces
           </span>
         </h1>
-        <p className="font-serif max-w-xl text-lg mx-auto">
+        <p className="text-sm sm:text-base md:text-lg font-serif max-w-2xl">
           Elegant watches that blend timeless
           sophistication with contemporary style,
           designed for the modern woman.

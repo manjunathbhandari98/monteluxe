@@ -12,7 +12,7 @@ const PriceSlider = ({
   max: number;
 }) => {
   return (
-    <div className="mt-6 p-4">
+    <div className="mt-6 px-6 py-4 sm:px-4">
       <h3 className="font-semibold mb-2">
         Price Range
       </h3>

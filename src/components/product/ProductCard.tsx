@@ -11,7 +11,7 @@ const ProductCard = ({
     <Link href={`/product/${product.slug}`}>
       <div className="rounded-md p-4 hover:shadow-lg hover:scale-3d hover:scale-102 transition">
         <Image
-          src={product.image}
+          src={`/images/${product.image}`}
           alt={product.name}
           width={400}
           height={400}

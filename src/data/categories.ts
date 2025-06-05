@@ -3,8 +3,6 @@ import { CategoryType } from "@/types";
 export const categories: CategoryType[] = [
   {
     name: "Classic",
-    shortDescription:
-      "Timeless designs that transcend trends",
     description:
       "Our Classic collection embodies the art of traditional watchmaking with timeless elegance. Each piece is meticulously crafted to be passed down through generations.",
     features: [
@@ -20,8 +18,6 @@ export const categories: CategoryType[] = [
   },
   {
     name: "Sport",
-    shortDescription:
-      "Engineered for performance and durability",
     description:
       "The Sport collection combines robust engineering with sophisticated design, created for those who demand precision in every environment.",
     features: [
@@ -37,8 +33,6 @@ export const categories: CategoryType[] = [
   },
   {
     name: "Complications",
-    shortDescription:
-      "The pinnacle of horological achievement",
     description:
       "Our Complications collection showcases the highest level of watchmaking artistry, featuring advanced functions and mechanical ingenuity.",
     features: [
@@ -54,8 +48,6 @@ export const categories: CategoryType[] = [
   },
   {
     name: "Heritage",
-    shortDescription:
-      "Inspired by our iconic historical models",
     description:
       "The Heritage collection pays homage to our most celebrated historical timepieces, reimagined with modern craftsmanship and materials.",
     features: [

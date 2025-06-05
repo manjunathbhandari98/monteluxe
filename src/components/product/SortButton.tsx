@@ -51,7 +51,7 @@ export function SortButton({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-[200px] justify-between"
+          className="max-w-[200px] justify-between"
         >
           {value
             ? sortOptions.find(

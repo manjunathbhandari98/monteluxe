@@ -1,17 +1,22 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import { useEffect, useState } from "react";
 import {
+  Menu,
   Search,
   ShoppingBag,
+  User,
   X,
 } from "lucide-react";
 import MonteluxeLogo from "../logo/MonteluxeLogo";
 import Navbar from "./Navbar";
 import Button from "../custom/Button";
 import Link from "next/link";
-import { product } from "@/data/product";
 import { ProductProps } from "@/types";
+import Sidebar from "./Sidebar";
+import { getProducts } from "@/services/productService";
+import ProfileMenu from "../profile/ProfileMenu";
 
 const Header = () => {
   const [isScrolled, setIsScrolled] =
@@ -22,6 +27,30 @@ const Header = () => {
     useState("");
   const [filteredProducts, setFilteredProducts] =
     useState<ProductProps[]>([]);
+  const [isSidebarOpen, setIsSidebarOpen] =
+    useState(false);
+  const [products, setProducts] = useState<
+    ProductProps[]
+  >([]);
+
+  const [user, setUser] = useState(
+    localStorage.getItem("authToken")
+  );
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const products = await getProducts();
+        setProducts(products);
+      } catch (error) {
+        console.error(
+          "Failed to fetch products:",
+          error
+        );
+      }
+    };
+    fetchProducts();
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -38,19 +67,17 @@ const Header = () => {
       );
   }, []);
 
-  // Lock scroll when search is open
   useEffect(() => {
-    if (isSearchOpen) {
+    if (isSearchOpen || isSidebarOpen) {
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "";
     }
-  }, [isSearchOpen]);
+  }, [isSearchOpen, isSidebarOpen]);
 
-  // Filter products based on search term
   useEffect(() => {
     if (searchTerm) {
-      const results = product.filter((p) =>
+      const results = products?.filter((p) =>
         p.name
           .toLowerCase()
           .includes(searchTerm.toLowerCase())
@@ -59,25 +86,31 @@ const Header = () => {
     } else {
       setFilteredProducts([]);
     }
-  }, [searchTerm]);
+  }, [products, searchTerm]);
 
   const BlurredBackground = () => (
     <div
       className="fixed inset-0 z-40 bg-black/30 backdrop-blur-sm"
       onClick={() => setIsSearchOpen(false)}
-    ></div>
+    />
   );
+
+  const handleLogout = () => {
+    localStorage.removeItem("authToken");
+    setUser(null);
+    window.location.href = "/";
+  };
 
   return (
     <>
       {isSearchOpen && <BlurredBackground />}
       {isSearchOpen ? (
         <div
-          className="fixed items-center top-0 left-0 w-full flex z-50 p-5 bg-black/60 shadow-md backdrop-blur transition-all ease-in-out duration-300"
+          className="fixed top-0 left-0 w-full z-50 p-4 flex items-center bg-black/60 backdrop-blur shadow-md"
           onClick={(e) => e.stopPropagation()}
         >
           <input
-            className="focus:outline-none border-b w-full outline-none bg-transparent py-2"
+            className="flex-grow bg-transparent border-b border-gray-500 text-white placeholder-gray-300 focus:outline-none py-2 px-2 text-sm md:text-base"
             autoFocus
             type="text"
             placeholder="Search anything..."
@@ -87,11 +120,11 @@ const Header = () => {
             }
           />
           <X
-            className="cursor-pointer"
+            className="ml-3 cursor-pointer text-white"
             onClick={() => setIsSearchOpen(false)}
           />
           {filteredProducts.length > 0 && (
-            <div className="absolute top-full left-0 w-full mt-2 bg-black text-white shadow-lg rounded-lg max-h-60 overflow-auto">
+            <div className="absolute top-full left-0 w-full mt-2 bg-black text-white shadow-lg rounded-lg max-h-60 overflow-auto z-50">
               <ul>
                 {filteredProducts.map(
                   (product, index) => (
@@ -116,13 +149,25 @@ const Header = () => {
         </div>
       ) : (
         <header
-          className={`fixed top-0 left-0 w-full z-50 pt-3 transition-colors duration-300 ${
+          className={`fixed top-0 left-0 w-full z-50 transition-colors duration-300 ${
             isScrolled
               ? "bg-black/60 shadow-md backdrop-blur"
               : "bg-transparent"
-          } `}
+          }`}
         >
-          <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
+          <div className="max-w-screen-xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
+            {/* Sidebar Menu Toggle */}
+            <div className="md:hidden">
+              <button
+                className="p-2"
+                onClick={() =>
+                  setIsSidebarOpen(true)
+                }
+              >
+                <Menu size={22} />
+              </button>
+            </div>
+
             {/* Logo */}
             <div className="flex items-center">
               <Link href="/">
@@ -130,16 +175,16 @@ const Header = () => {
               </Link>
             </div>
 
-            {/* Navbar */}
+            {/* Navbar (desktop only) */}
             <nav className="hidden md:flex">
               <Navbar />
             </nav>
 
             {/* Actions */}
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 sm:gap-4">
               <button
                 aria-label="Search"
-                className="p-2 cursor-pointer hover:text-luxury-gold transition-colors duration-300"
+                className="p-2 hover:text-luxury-gold transition-colors"
               >
                 <Search
                   size={20}
@@ -148,29 +193,77 @@ const Header = () => {
                   }
                 />
               </button>
-              <Link href="/cart">
-                <button
-                  aria-label="Shopping Bag"
-                  className="p-2 cursor-pointer hover:text-luxury-gold transition-colors duration-300 relative"
-                >
-                  <ShoppingBag size={20} />
-                  <span className="absolute -top-1 -right-1 w-4 h-4 flex items-center justify-center rounded-full bg-luxury-gold text-black text-[10px] font-semibold">
-                    2
-                  </span>
-                </button>
-              </Link>
-              <Link href="/book-appointment">
-                <Button
-                  variant="primary"
-                  size="small"
-                  className="text-black font-medium"
-                >
-                  Book Appointment
-                </Button>
-              </Link>
+              {user ? (
+                <div className="flex gap-5">
+                  <Link href="/cart">
+                    <button
+                      aria-label="Shopping Bag"
+                      className="p-2 relative hover:text-luxury-gold transition-colors"
+                    >
+                      <ShoppingBag size={20} />
+                      <span className="absolute -top-1 -right-1 w-4 h-4 flex items-center justify-center rounded-full bg-luxury-gold text-black text-[10px] font-semibold">
+                        2
+                      </span>
+                    </button>
+                  </Link>
+                  <ProfileMenu
+                    onLogout={handleLogout}
+                  />
+                </div>
+              ) : (
+                <div className="flex gap-10">
+                  <Link href="/register">
+                    <Button
+                      variant="primary"
+                      size="medium"
+                      className="text-black font-medium rounded-sm"
+                    >
+                      Register
+                    </Button>
+                  </Link>
+
+                  <Link
+                    href="/login"
+                    className="hidden md:flex"
+                  >
+                    <Button
+                      variant="outline"
+                      size="medium"
+                      className="text-black font-medium rounded-sm"
+                    >
+                      Login
+                    </Button>
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
         </header>
+      )}
+
+      {/* Sidebar (mobile) */}
+      {isSidebarOpen && (
+        <>
+          <div
+            className="fixed inset-0 z-40 bg-black/50"
+            onClick={() =>
+              setIsSidebarOpen(false)
+            }
+          />
+          <div className="fixed left-0 top-0 z-50 bg-black w-72 max-w-full h-full shadow-lg overflow-auto">
+            <div className="flex justify-end p-4">
+              <X
+                className="cursor-pointer text-white"
+                onClick={() =>
+                  setIsSidebarOpen(false)
+                }
+              />
+            </div>
+            <Sidebar
+              setIsSidebarOpen={setIsSidebarOpen}
+            />
+          </div>
+        </>
       )}
     </>
   );

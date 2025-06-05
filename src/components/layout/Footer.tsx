@@ -10,68 +10,43 @@ import {
 
 const Footer = () => {
   const socialLinks = [
-    {
-      name: "facebook",
-      link: "/",
-    },
-    {
-      name: "instagram",
-      link: "/",
-    },
-    {
-      name: "twitter",
-      link: "/",
-    },
-    {
-      name: "youtube",
-      link: "/",
-    },
+    { name: "facebook", link: "/" },
+    { name: "instagram", link: "/" },
+    { name: "twitter", link: "/" },
+    { name: "youtube", link: "/" },
   ];
 
   const quickLinks = [
-    {
-      lable: "Collections",
-      link: "/collectons",
-    },
+    { lable: "Collections", link: "/collectons" },
     {
       lable: "Men's Watches",
-      link: "/collectons",
+      link: "/men",
     },
     {
       lable: "Women's Watches",
-      link: "/collectons",
+      link: "/women",
     },
     {
       lable: "New Arrivals",
-      link: "/collectons",
-    },
-    {
-      lable: "Gift Cards",
-      link: "/collectons",
+      link: "/new-arrivals",
     },
   ];
 
   const information = [
-    {
-      lable: "About Us",
-      link: "/collectons",
-    },
+    { lable: "About Us", link: "/about" },
     {
       lable: "Craftsmanship",
-      link: "/collectons",
+      link: "/craftsmanship",
     },
     {
       lable: "Warranty & Service",
-      link: "/collectons",
+      link: "/waranty-services",
     },
     {
       lable: "Shipping & Returns",
-      link: "/collectons",
+      link: "/shipping-and-returns",
     },
-    {
-      lable: "FAQs",
-      link: "/collectons",
-    },
+    { lable: "FAQs", link: "/faqs" },
     {
       lable: "Privacy Policy",
       link: "/privacy-policy",
@@ -96,102 +71,103 @@ const Footer = () => {
 
   return (
     <div className="mt-4">
-      <div className="border-t border-luxury-gold pt-20 pb-10 mx-10">
+      <div className="border-t border-luxury-gold pt-20 pb-10 px-4 md:px-10">
         {/* main */}
-        <div className="flex justify-around">
-          {/* logo and desc */}
-          <div className="flex flex-col gap-10 w-2/5">
-            {/* logo */}
+        <div className="flex flex-col md:flex-row justify-between gap-y-10 gap-x-6">
+          {/* Logo and description */}
+          <div className="flex flex-col gap-6 md:w-2/5 w-full">
             <MonteluxeLogo />
-            <div className="desc font-serif text-lg">
+            <p className="font-serif text-lg">
               Crafting exceptional timepieces that
               blend traditional watchmaking with
               modern innovation since 1898.
-            </div>
+            </p>
 
-            {/* social links */}
-            <div className="flex gap-8 [&>img]:w-4 [&>img]:h-4">
+            <div className="flex gap-6">
               {socialLinks.map((link, index) => (
-                <img
+                <a
                   key={index}
-                  src={`/images/icons/${link.name}.png`}
-                  alt={link.name}
-                />
+                  href={link.link}
+                >
+                  <img
+                    src={`/images/icons/${link.name}.png`}
+                    alt={link.name}
+                    className="w-4 h-4"
+                  />
+                </a>
               ))}
             </div>
           </div>
-          <div className="flex flex-col w-1/5">
-            <h1 className="font-serif text-xl mb-10">
+
+          {/* QuickLinks */}
+          <div className="flex flex-col md:w-1/5 w-full">
+            <h1 className="font-serif text-xl mb-6">
               QuickLinks
             </h1>
-
-            <div className="flex flex-col gap-5">
+            <div className="flex flex-col gap-4">
               {quickLinks.map((link, index) => (
-                <div
+                <Link
                   key={index}
+                  href={link.link}
                   className="text-sm font-semibold"
                 >
-                  <Link href={link.link}>
-                    {link.lable}
-                  </Link>
-                </div>
+                  {link.lable}
+                </Link>
               ))}
             </div>
           </div>
 
           {/* Information */}
-          <div className="flex flex-col  w-1/5">
-            <h1 className="font-serif text-xl mb-10">
+          <div className="flex flex-col md:w-1/5 w-full">
+            <h1 className="font-serif text-xl mb-6">
               Information
             </h1>
-
-            <div className="flex flex-col gap-5">
+            <div className="flex flex-col gap-4">
               {information.map((link, index) => (
-                <div
+                <Link
                   key={index}
+                  href={link.link}
                   className="text-sm font-semibold"
                 >
-                  <Link href={link.link}>
-                    {link.lable}
-                  </Link>
-                </div>
+                  {link.lable}
+                </Link>
               ))}
             </div>
           </div>
+
           {/* Contact Us */}
-          <div className="flex flex-col  w-1/5">
-            <h1 className="font-serif text-xl mb-10">
+          <div className="flex flex-col md:w-1/5 w-full">
+            <h1 className="font-serif text-xl mb-6">
               Contact Us
             </h1>
-
-            <div className="flex flex-col gap-5">
-              {contactUs.map((link, index) => (
+            <div className="flex flex-col gap-4">
+              {contactUs.map((item, index) => (
                 <div
                   key={index}
-                  className="text-sm flex items-center gap-4 font-semibold"
+                  className="flex items-start gap-3 text-sm font-semibold"
                 >
-                  <div className="icon text-luxury-gold">
-                    {link.icon}
+                  <div className="text-luxury-gold mt-1">
+                    {item.icon}
                   </div>
-
-                  {link.label}
+                  <span>{item.label}</span>
                 </div>
               ))}
             </div>
           </div>
         </div>
-        {/* border */}
-        <div className="border-b py-8"></div>
-        {/* copyright */}
 
-        <div className="flex text-sm font-serif justify-between pt-6">
+        {/* Divider */}
+        <div className="border-b py-8 mt-10"></div>
+
+        {/* Copyright */}
+        <div className="flex flex-col md:flex-row justify-between items-center text-sm font-serif pt-6 gap-4 text-center md:text-left">
           <p>
             © 2025 Monteluxe. All rights reserved.
           </p>
-          <div className="flex justify-between space-x-7">
+          <div className="flex flex-wrap justify-center gap-6">
             <Link href="/">Terms of Service</Link>
             <Link href="/">Privacy Policy</Link>
-            <Link href="/">Cookie Policy </Link>
+            <Link href="/">Cookie Policy</Link>
           </div>
         </div>
       </div>

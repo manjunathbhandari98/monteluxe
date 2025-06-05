@@ -2,6 +2,7 @@ import { featuredCollections } from "@/data/featuredCollection";
 import WatchCard from "../custom/WatchCard";
 import Button from "../custom/Button";
 import { ArrowRight } from "lucide-react";
+import Link from "next/link";
 
 const Featured = () => {
   return (
@@ -28,17 +29,19 @@ const Featured = () => {
               timeless design.
             </p>
           </div>
-          <Button
-            variant="outline"
-            size="medium"
-            className="mt-6 md:mt-0 font-semibold"
-          >
-            View All Collections{" "}
-            <ArrowRight
-              size={16}
-              className="ml-2"
-            />
-          </Button>
+          <Link href="/collections">
+            <Button
+              variant="outline"
+              size="medium"
+              className="mt-6 md:mt-0 font-semibold"
+            >
+              View All Collections{" "}
+              <ArrowRight
+                size={16}
+                className="ml-2"
+              />
+            </Button>
+          </Link>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10">
