@@ -39,3 +39,22 @@ export const loginUser = async (userData: {
     throw new Error("Failed to login user");
   }
 };
+
+export const getUser = async () => {
+  try {
+    const response = await axios.get(
+      `${BASE_URL}/user/me`,
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem(
+            "authToken"
+          )}`,
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error getting User: ", error);
+    throw new Error("Failed to fetch User");
+  }
+};

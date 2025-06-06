@@ -47,9 +47,19 @@ export interface ProductProps {
 }
 
 export interface UserProps {
+  id: string;
   name: string;
   email: string;
   password: string;
   phone: string;
   role: string;
+}
+
+export interface CartProps {
+  items: {
+    productId: string;
+    price: number;
+    image: string;
+    productName: string;
+  };
 }

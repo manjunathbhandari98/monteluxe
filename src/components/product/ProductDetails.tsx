@@ -1,6 +1,14 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
-import React, { useState } from "react";
-import { ProductProps } from "@/types";
+import React, {
+  useEffect,
+  useState,
+} from "react";
+import {
+  CartProps,
+  ProductProps,
+  UserProps,
+} from "@/types";
 import {
   Heart,
   Share2,
@@ -10,6 +18,8 @@ import {
 } from "lucide-react";
 import Button from "../custom/Button";
 import Image from "next/image";
+import { getUser } from "@/services/authService";
+import { addToCart } from "@/services/cartService";
 
 const ProductDetails = ({
   product,
@@ -20,11 +30,22 @@ const ProductDetails = ({
     useState(0);
   const [selectedSize, setSelectedSize] =
     useState(product.caseSize || "");
+  const [user, setUser] =
+    useState<UserProps | null>(null);
 
   const images = [
     product.image,
     ...(product?.images || []),
   ];
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const fetchedUser = await getUser();
+      setUser(fetchedUser);
+      console.log("Fetched User: ", fetchedUser);
+    };
+    fetchUser();
+  }, []);
 
   const specs = {
     Gender: product.gender,
@@ -33,6 +54,24 @@ const ProductDetails = ({
     "Water Resistance": product.waterResistance,
     Movement: product.movement,
     Strap: product.strapMaterial,
+  };
+
+  const addToBag = async () => {
+    if (!user || !product?.id) {
+      console.error("Missing user or product ID");
+      return;
+    }
+
+    const cartData: CartProps = {
+      items: {
+        productId: product.id,
+        price: product.price,
+        image: product.image,
+        productName: product.name,
+      },
+    };
+
+    await addToCart(cartData, user.id);
   };
 
   return (
@@ -141,6 +180,7 @@ const ProductDetails = ({
                 variant="primary"
                 size="large"
                 className="flex-1 font-semibold text-black"
+                onClick={addToBag}
               >
                 ADD TO BAG
               </Button>
