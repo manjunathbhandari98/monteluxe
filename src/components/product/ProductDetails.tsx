@@ -63,13 +63,19 @@ const ProductDetails = ({
     }
 
     const cartData: CartProps = {
-      items: {
-        productId: product.id,
-        price: product.price,
-        image: product.image,
-        productName: product.name,
-      },
+      userId: user.id,
+      items: [
+        {
+          productId: product.id,
+          price: product.price,
+          quantity: 1,
+          image: product.image,
+          productName: product.name,
+        },
+      ],
     };
+
+    console.log(cartData);
 
     await addToCart(cartData, user.id);
   };

@@ -55,11 +55,15 @@ export interface UserProps {
   role: string;
 }
 
-export interface CartProps {
-  items: {
-    productId: string;
-    price: number;
-    image: string;
-    productName: string;
-  };
-}
+export type CartItem = {
+  productId: string;
+  price: number;
+  quantity: number;
+  image: string;
+  productName: string;
+};
+
+export type CartProps = {
+  items: CartItem[]; // <-- changed from tuple to array
+  userId?: string;
+};

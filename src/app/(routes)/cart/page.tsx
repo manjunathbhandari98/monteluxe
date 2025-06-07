@@ -1,5 +1,9 @@
 "use client";
-import React, { useState } from "react";
+
+import React, {
+  useEffect,
+  useState,
+} from "react";
 import {
   Minus,
   Plus,
@@ -10,72 +14,141 @@ import {
 import Link from "next/link";
 import Button from "@/components/custom/Button";
 import Image from "next/image";
+import { CartProps, UserProps } from "@/types";
+import { getUser } from "@/services/authService";
+import {
+  getCartItems,
+  updateCart,
+} from "@/services/cartService";
 
 const Cart: React.FC = () => {
-  const [cartItems, setCartItems] = useState([
-    {
-      id: 1,
-      name: "Royal Chronograph Masterpiece",
-      reference: "RCM-2024-001",
-      price: 12500,
-      size: "41mm",
-      image:
-        "https://images.pexels.com/photos/9978681/pexels-photo-9978681.jpeg?auto=compress&cs=tinysrgb&w=800",
-      quantity: 1,
-    },
-    {
-      id: 2,
-      name: "Celestial Automatic",
-      reference: "CA-2024-002",
-      price: 8950,
-      size: "39mm",
-      image:
-        "https://images.pexels.com/photos/1034065/pexels-photo-1034065.jpeg?auto=compress&cs=tinysrgb&w=800",
-      quantity: 1,
-    },
-  ]);
+  const [cartData, setCartData] =
+    useState<CartProps | null>(null);
+  const [user, setUser] =
+    useState<UserProps | null>(null);
 
-  const handleIncrease = (id: number) => {
-    setCartItems((prev) =>
-      prev.map((item) =>
-        item.id === id
-          ? {
-              ...item,
-              quantity: item.quantity + 1,
-            }
-          : item
-      )
+  useEffect(() => {
+    const fetchUser = async () => {
+      const fetchedUser = await getUser();
+      setUser(fetchedUser);
+      console.log("Fetched User: ", fetchedUser);
+    };
+    fetchUser();
+  }, []);
+
+  useEffect(() => {
+    if (!user) return;
+    const fetchCartItems = async () => {
+      const cart = await getCartItems(user.id);
+      setCartData(cart);
+      console.log("Fetched Cart Items: ", cart);
+    };
+    fetchCartItems();
+  }, [user]);
+
+  const handleIncrease = async (
+    productId: string
+  ) => {
+    if (!cartData || !user) return;
+
+    const updatedItems = cartData.items.map(
+      (item) => {
+        if (item.productId === productId) {
+          return {
+            ...item,
+            quantity: item.quantity + 1,
+            price:
+              item.price +
+              item.price / item.quantity, // unit price
+          };
+        }
+        return item;
+      }
     );
+
+    const updatedCart = {
+      ...cartData,
+      items: updatedItems,
+    };
+    const response = await updateCart(
+      user.id,
+      updatedCart
+    );
+    setCartData(response);
   };
 
-  const handleDecrease = (id: number) => {
-    setCartItems((prev) =>
-      prev.map((item) =>
-        item.id === id && item.quantity > 1
-          ? {
+  const handleDecrease = async (
+    productId: string
+  ) => {
+    if (!cartData || !user) return;
+
+    const updatedItems = cartData.items
+      .map((item) => {
+        if (item.productId === productId) {
+          if (item.quantity > 1) {
+            return {
               ...item,
               quantity: item.quantity - 1,
-            }
-          : item
-      )
+              price:
+                item.price -
+                item.price / item.quantity, // unit price
+            };
+          }
+          return null; // remove if quantity becomes 0
+        }
+        return item;
+      })
+      .filter(Boolean) as CartProps["items"];
+
+    const updatedCart = {
+      ...cartData,
+      items: updatedItems,
+    };
+    const response = await updateCart(
+      user.id,
+      updatedCart
     );
+    setCartData(response);
   };
 
-  const handleRemove = (id: number) => {
-    setCartItems((prev) =>
-      prev.filter((item) => item.id !== id)
+  const handleRemove = async (
+    productId: string
+  ) => {
+    if (!cartData || !user) return;
+
+    const updatedItems = cartData.items.filter(
+      (item) => item.productId !== productId
     );
+
+    const updatedCart = {
+      ...cartData,
+      items: updatedItems,
+    };
+    const response = await updateCart(
+      user.id,
+      updatedCart
+    );
+    setCartData(response);
   };
 
-  const subtotal = cartItems.reduce(
-    (acc, item) =>
-      acc + item.price * item.quantity,
-    0
-  );
+  const subtotal =
+    cartData?.items?.reduce(
+      (acc, item) =>
+        acc + item.price * item.quantity,
+      0
+    ) || 0;
 
   const shipping = 0;
   const tax = subtotal * 0.08;
   const total = subtotal + shipping + tax;
+
+  if (!cartData) {
+    return (
+      <div className="pt-20 h-full w-full flex justify-center items-center m-auto text-center text-xl text-gray-600">
+        Loading your cart...
+      </div>
+    );
+  }
 
   return (
     <div className="pt-20">
@@ -84,51 +157,42 @@ const Cart: React.FC = () => {
           Shopping Cart
         </h1>
 
-        {cartItems.length > 0 ? (
+        {cartData.items.length > 0 ? (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
             {/* Cart Items */}
             <div className="lg:col-span-2 space-y-6">
-              {cartItems.map((item) => (
+              {cartData?.items.map((item) => (
                 <div
-                  key={item.id}
+                  key={item.productId}
                   className="bg-background-darker rounded-lg p-4 sm:p-6 border border-luxury-gold/10"
                 >
                   <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
-                    {/* Product Image */}
                     <div className="w-full sm:w-24 sm:h-24 relative rounded-lg overflow-hidden">
                       <Image
-                        src={item.image}
-                        alt={item.name}
+                        src={`/images/classic.jpg`}
+                        alt={item.productName}
                         fill
                         className="object-cover"
                       />
                     </div>
 
-                    {/* Product Info + Quantity */}
                     <div className="flex-1 w-full">
                       <Link
-                        href={`/product/${item.id}`}
+                        href={`/product/${item.productId}`}
                         className="font-serif text-lg hover:text-luxury-gold transition-colors block"
                       >
-                        {item.name}
+                        {item.productName}
                       </Link>
-                      <p className="text-text-muted text-sm">
-                        Ref: {item.reference}
-                      </p>
-                      <p className="text-text-muted text-sm">
-                        Size: {item.size}
-                      </p>
                       <p className="text-luxury-gold mt-2">
                         $
                         {item.price.toLocaleString()}
                       </p>
 
-                      {/* Quantity Controls */}
                       <div className="flex items-center space-x-4 mt-4">
                         <button
                           onClick={() =>
                             handleDecrease(
-                              item.id
+                              item.productId
                             )
                           }
                           className="p-1 text-text-muted hover:text-luxury-gold transition-colors"
@@ -141,7 +205,7 @@ const Cart: React.FC = () => {
                         <button
                           onClick={() =>
                             handleIncrease(
-                              item.id
+                              item.productId
                             )
                           }
                           className="p-1 text-text-muted hover:text-luxury-gold transition-colors"
@@ -151,11 +215,12 @@ const Cart: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Remove Button */}
                     <div className="sm:self-start sm:mt-0 hidden sm:flex mt-4">
                       <button
                         onClick={() =>
-                          handleRemove(item.id)
+                          handleRemove(
+                            item.productId
+                          )
                         }
                         className="p-2 text-text-muted hover:text-luxury-gold transition-colors"
                       >
@@ -166,7 +231,9 @@ const Cart: React.FC = () => {
                     <div className="sm:self-start sm:mt-0 flex sm:hidden mt-4">
                       <Button
                         onClick={() =>
-                          handleRemove(item.id)
+                          handleRemove(
+                            item.productId
+                          )
                         }
                         variant="outline"
                         className="p-2 text-text-muted hover:text-luxury-gold transition-colors"
